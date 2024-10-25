@@ -60,6 +60,7 @@ class MyAgent(Player):
         predNextMove_opp1 = self.markovPred(oppHistory1);
         predNextMove_opp2 = self.markovPred(oppHistory2);
         # Make decisions based on predictions from both players' history moves
+        # if anyone coops, we still give a chance to coop again, otherwise we defect.
         action: int = predNextMove_opp1 and predNextMove_opp2;
         return action;
     
