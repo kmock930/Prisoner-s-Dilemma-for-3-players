@@ -22,7 +22,7 @@ class SelfishAgent(Player):
         strats.append(self.firstStrat(myHistory, oppHistory1, oppHistory2));
         
         # 2nd level strategy
-        #strats.append(self.secondStrat(myHistory, oppHistory1, oppHistory2));
+        strats.append(self.secondStrat(myHistory, oppHistory1, oppHistory2));
 
         # determine from all strats - by majority vote based on the mean
         action: int = round(np.mean(np.asarray(strats)));
