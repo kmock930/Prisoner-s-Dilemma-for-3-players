@@ -10,6 +10,7 @@ class MyAgent(Player):
     @author: Kelvin
     """
     #def __init__(self): # default constructor
+    N_ROUND_TO_FAKE_AFTER_HANDSHAKE = 3;
         
     def studentID(self):
         return "300453668"
@@ -28,6 +29,9 @@ class MyAgent(Player):
 
         # third-level strategy - based on some particular patterns of actions from previous round
         strats.append(self.thirdStrat(myHistory, oppHistory1, oppHistory2));
+
+        # fourth-level strategy - logic to backstab an ally's handshake
+        strats.append(self.fourthStrat(myHistory, oppHistory1, oppHistory2));
     
         # determine from all strats - by majority vote based on the mean
         action: int = round(np.mean(np.asarray(strats)));
@@ -89,6 +93,33 @@ class MyAgent(Player):
                         return 0;
         # if pattern does not match, then we defect.
         return 1;
+
+    def fourthStrat(self, myHistory, oppHistory1, oppHistory2):
+        if (len(myHistory) == 0 or len(oppHistory1) == 0 or len(oppHistory2) == 0):
+            # start by coop
+            return 0;
+    
+        foundHandshake: bool = False;
+        for handshakeStartInd in range(len(myHistory)):
+            if (foundHandshake == True):
+                break;
+            if (oppHistory1[handshakeStartInd] == oppHistory2[handshakeStartInd] == 0):
+                # handshake: means both coop
+                foundHandshake = True;
+        
+        currRound: int = len(myHistory);
+        if (foundHandshake == True):
+            if (handshakeStartInd == currRound - 1 - self.N_ROUND_TO_FAKE_AFTER_HANDSHAKE):
+                # backstab ally by defecting
+                # benefit of backstab: reward = 8 (max)
+                # assume opponents (i.e. both allies) continue to coop = handshake
+                return 1;
+            else:
+                return 0;
+        else: 
+            # situation: when handshake is not found in past history from both players (i.e., not allies)
+            # no handshake, then we rely on strat 3 to determine whether we should give chance or not
+            return self.thirdStrat(myHistory, oppHistory1, oppHistory2);
 
     # util functions
     def countFromOpp(self, oppHistory, isDefect = True):
