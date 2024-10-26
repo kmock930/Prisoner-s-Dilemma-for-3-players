@@ -25,6 +25,9 @@ class MyAgent(Player):
 
         # second-level strategy - based on ML approach - Markov chains Predictions
         strats.append(self.secondStrat(myHistory, oppHistory1, oppHistory2));
+
+        # third-level strategy - based on some particular patterns of actions from previous round
+        strats.append(self.thirdStrat(myHistory, oppHistory1, oppHistory2));
     
         # determine from all strats - by majority vote based on the mean
         action: int = round(np.mean(np.asarray(strats)));
@@ -64,6 +67,29 @@ class MyAgent(Player):
         action: int = predNextMove_opp1 and predNextMove_opp2;
         return action;
     
+    def thirdStrat(self, myHistory, oppHistory1, oppHistory2):
+        '''
+        Strategy 3: Deciding whether to coop solely based on special combinations from 1-prev round of game.
+        '''
+        # define patterns to coop based on this paper:
+        # https://www.tandfonline.com/doi/pdf/10.1080/00224545.1969.9922385?casa_token=uqkxPScI7vQAAAAA:3yFOWapSA8vGmsc4xoUdpBJJ_iiTM9gJuMEIAgE8yQe14-aeX5A8jIMzzwx8_Ahvd_y-DkNv6Oxd
+        patterns = [
+            (0, 0, 0),
+            (1, 0, 0),
+            (1, 1, 1)
+        ];
+        for pattern in patterns:
+            # comparing my own previous action
+            if (pattern[0] == myHistory[-1]):
+                # comparing opp 1's previous action
+                if (pattern[1] == oppHistory1[-1]):
+                    # comparing opp 2's previous action
+                    if (pattern[2] == oppHistory2[-1]):
+                        # coop only if all conditions of a pattern are met
+                        return 0;
+        # if pattern does not match, then we defect.
+        return 1;
+
     # util functions
     def countFromOpp(self, oppHistory, isDefect = True):
         '''
