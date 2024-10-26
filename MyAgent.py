@@ -110,10 +110,22 @@ class MyAgent(Player):
         currRound: int = len(myHistory);
         if (foundHandshake == True):
             if (handshakeStartInd == currRound - 1 - self.N_ROUND_TO_FAKE_AFTER_HANDSHAKE):
-                # backstab ally by defecting
-                # benefit of backstab: reward = 8 (max)
-                # assume opponents (i.e. both allies) continue to coop = handshake
-                return 1;
+                isAllHandshake = True;
+                for i in range(handshakeStartInd, len(myHistory) - 1):
+                    # check whether all consecutive rounds are also handshake
+                    if (myHistory[i] == oppHistory1[i] == oppHistory2[i]):
+                        continue;
+                    else:
+                        isAllHandshake = False;
+                if (isAllHandshake == True):
+                    # backstab ally by defecting
+                    # benefit of backstab: reward = 8 (max)
+                    # assume opponents (i.e. both allies) continue to coop = handshake
+                    return 1;
+                else: 
+                    # situation: not all past actions from the first handshake till current round establish a handshake
+                    # rely on strat 3 to determine whether we should give chance or not
+                    return self.thirdStrat(myHistory, oppHistory1, oppHistory2);
             else:
                 return 0;
         else: 
