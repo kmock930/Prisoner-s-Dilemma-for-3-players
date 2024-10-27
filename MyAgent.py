@@ -11,6 +11,7 @@ class MyAgent(Player):
     """
     #def __init__(self): # default constructor
     N_ROUND_TO_FAKE_AFTER_HANDSHAKE = 3;
+    N_CONSISTENT_ROUNDS = 5; #take 5 rounds to determine whether handshake or not
         
     def studentID(self):
         return "300453668"
@@ -32,10 +33,13 @@ class MyAgent(Player):
 
         # fourth-level strategy - logic to backstab an ally's handshake
         strats.append(self.fourthStrat(myHistory, oppHistory1, oppHistory2));
+
+        # selfish strategy 1: If somebody's defect > coop, then we defect
+        strats.append(self.firstSelfishStrat(myHistory, oppHistory1, oppHistory2));
     
         # determine from all strats - by majority vote based on the mean
         action: int = round(np.mean(np.asarray(strats)));
-        print(f"My Own Agent takes {action}");
+        #print(f"My Own Agent takes {action}");
         return action;
 
     # Strategies set
@@ -136,6 +140,24 @@ class MyAgent(Player):
             # situation: when handshake is not found in past history from both players (i.e., not allies)
             # no handshake, then we rely on strat 3 to determine whether we should give chance or not
             return self.thirdStrat(myHistory, oppHistory1, oppHistory2);
+
+    # Selfish strategies
+    # If somebody's defect > coop, then we defect
+    def firstSelfishStrat(self, myHistory, oppHistory1, oppHistory2):
+        '''
+        Selfish Strategy 1: If any opponent's defect > coop in history --> then we Defect.
+        '''
+        # predict if someone's gonna defect/coop 
+        # with the mean of his history
+        if (len(oppHistory1) > 0 and len(oppHistory2) > 0):
+            # defect > coop: mean will be rounded to 1
+            predOpp1:int = round(np.mean(np.asarray(oppHistory1)));
+            predOpp2:int = round(np.mean(np.asarray(oppHistory2)));
+            # return 0 if the mean tends to 0, otherwise return 1
+            return max(predOpp1, predOpp2);
+        else:
+            # defect by default
+            return 1;
 
     # util functions
     def countFromOpp(self, oppHistory, isDefect = True):
