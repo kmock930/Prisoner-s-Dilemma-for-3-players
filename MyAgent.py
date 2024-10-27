@@ -95,6 +95,10 @@ class MyAgent(Player):
         return 1;
 
     def fourthStrat(self, myHistory, oppHistory1, oppHistory2):
+        '''
+        Strategy 4: Deciding whether to backstab an ally after a certain number of rounds in the game, 
+        to aim for the best utilities in both situations, i.e., when you coop and when you defect, respectively. 
+        '''
         if (len(myHistory) == 0 or len(oppHistory1) == 0 or len(oppHistory2) == 0):
             # start by coop
             return 0;
