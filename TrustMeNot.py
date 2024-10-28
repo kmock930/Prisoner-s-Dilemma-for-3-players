@@ -1,7 +1,7 @@
 from prison import Player
 import numpy as np
 
-class MyAgent(Player):
+class TrustMeNot(Player):
     """
     My agent
 
@@ -23,7 +23,7 @@ class MyAgent(Player):
     def studentID(self):
         return "300453668"
     def agentName(self):
-        return "My Agent"
+        return "TrustMeNot"
     def play(self, myHistory, oppHistory1, oppHistory2):
         if (len(myHistory) == 0 or len(oppHistory1) == 0 or len(oppHistory2) == 0):
             # start by cooperating
