@@ -21,7 +21,7 @@ class TrustMeNot(Player):
         self.mode = 0;
         
     def studentID(self):
-        return "300453668"
+        return "101363677"
     def agentName(self):
         return "TrustMeNot"
     def play(self, myHistory, oppHistory1, oppHistory2):
