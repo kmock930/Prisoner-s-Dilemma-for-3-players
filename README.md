@@ -17,6 +17,9 @@ These strategies prioritize maximizing the agent’s own profit without consider
 Using the mathematical approach suggested by “AgentCipher,” I implemented a handshaking algorithm based on Elliptic-curve Cryptography (ECC), a key-based encryption method commonly used in secure communications. [3] ECC prevents other parties from predicting the resulting value, enhancing the security of communication. [4] Additionally, scalar-based matrix multiplication simplifies the handshaking algorithm, as complex encryption is not the agent’s main focus. [5]. Allies communicate through a specific 5-round action pattern, with each action encrypted and sent to an ally each round. Internally, the agent decrypts the codeword and checks for a pattern match. If matched, the opponent is identified as an ally; otherwise, TrustMeNot activates its second selfish strategy to protect its rewards. 
 # References
 [1] James T. Tedeschi, Douglas S. Hiester & James P. Gahagan, "Trust and the Prisoner's Dilemma Game," pp. 43-50, 30 06 2010.
+
 [2] K. Mock, "The Incentive to Cooperate with other agents," 23 10 2024. [Online]. Available: https://brightspace.carleton.ca/d2l/le/292860/discussions/threads/653279/View.
+
 [3] "vmware by Boradcom," [Online]. Available: https://www.vmware.com/topics/elliptic-curve-cryptography. [Accessed 28 10 2024].
+
 [4] A. Menezes, P. v. Oorschot and S. Vanstone, Handbook of Applied Cryptography (5th ed.), CRC Press. ISBN 0-8493-8523-7., 1997.
