@@ -9,9 +9,16 @@ class MyAgent(Player):
 
     @author: Kelvin
     """
-    #def __init__(self): # default constructor
     N_ROUND_TO_FAKE_AFTER_HANDSHAKE = 3;
     N_CONSISTENT_ROUNDS = 5; #take 5 rounds to determine whether handshake or not
+
+    def __init__(self): # default constructor
+        self.code = [0,0,0,0,0];
+        self.handshake = self.ECC();
+        self.encoded_code = self.handshake.encode(self.code);
+        self.flip = 0; # Used to remember last move
+        self.send_bits = [];
+        self.mode = 0;
         
     def studentID(self):
         return "300453668"
@@ -20,7 +27,28 @@ class MyAgent(Player):
     def play(self, myHistory, oppHistory1, oppHistory2):
         if (len(myHistory) == 0 or len(oppHistory1) == 0 or len(oppHistory2) == 0):
             # start by cooperating
+            self.send_bits.append(0);
             return 0;
+        if (len(myHistory) >= 5):
+            # update previous move from handshake
+            self.flip = myHistory[-1];
+            data_bits = oppHistory1[-5:];
+            encoded = self.handshake.encode(data_bits);
+            decoded = self.handshake.decode(encoded);
+            if (all(codeword == 0 for codeword in decoded)):
+                # opp 1 is an ally
+                pass;
+            else:
+                self.mode = -1; # attack mode
+            data_bits = oppHistory2[-5:];
+            encoded = self.handshake.encode(data_bits);
+            decoded = self.handshake.decode(encoded);
+            if (all(codeword == 0 for codeword in decoded)):
+                # opp 2 is an ally
+                pass;
+            else:
+                self.mode = -1; # attack mode
+
         strats: list = [];
         # first-level strategy - based on numbr of defects / coops
         strats.append(self.firstStrat(myHistory, oppHistory1, oppHistory2));
@@ -36,10 +64,16 @@ class MyAgent(Player):
 
         # selfish strategy 1: If somebody's defect > coop, then we defect
         strats.append(self.firstSelfishStrat(myHistory, oppHistory1, oppHistory2));
+
+        # selfish strategy 2: Defect to gurantee self utilities if any of the opponents is not an ally
+        if (self.mode < 0):
+            # defect by default, unless they establish handshake coincidently in n-th rounds
+            strats.append(self.secondSelfishStrat(myHistory, oppHistory1, oppHistory2));
     
         # determine from all strats - by majority vote based on the mean
         action: int = round(np.mean(np.asarray(strats)));
-        #print(f"My Own Agent takes {action}");
+        print(f"My Own Agent takes {action}");
+        self.send_bits.append(action);
         return action;
 
     # Strategies set
@@ -159,6 +193,45 @@ class MyAgent(Player):
             # defect by default
             return 1;
 
+    def secondSelfishStrat(self, myHistory, oppHistory1, oppHistory2):
+        '''
+        Selfish Strategy 2: If both opponents play consistently in n-th rounds cooperatively, then we coop, else Defect. 
+        '''
+        isCoop:bool = True;
+
+        if (len(oppHistory1) < self.N_CONSISTENT_ROUNDS or len(oppHistory2) < self.N_CONSISTENT_ROUNDS):
+            # we by default defect
+            return 1;
+
+        # considering opponent 1
+        opp1_prevAction: int;
+        for consideringRound in range(len(oppHistory1)-1, len(oppHistory1)-1 - self.N_CONSISTENT_ROUNDS, -1):
+            if (consideringRound < len(oppHistory1) - 1):
+                # the first prev round in consideration
+                opp1_prevAction = oppHistory1[consideringRound+1];
+            else:
+                # we assume handshaking in the first round without further history stats
+                continue;
+            # current round's action = previous round's action
+            isCoop = isCoop and opp1_prevAction == oppHistory1[consideringRound];
+        
+        # considering opponent 2
+        opp2_prevAction: int;
+        for consideringRound in range(len(oppHistory2)-1, len(oppHistory2)-1 - self.N_CONSISTENT_ROUNDS, -1):
+            if (consideringRound < len(oppHistory2) - 1):
+                # the first prev round in consideration
+                opp2_prevAction = oppHistory2[consideringRound+1];
+            else:
+                continue;
+            # current round's action = previous round's action
+            isCoop = isCoop and opp2_prevAction == oppHistory2[consideringRound];
+        
+        # determine the action
+        if (isCoop == True):
+            return 0;
+        else:
+            return 1;
+
     # util functions
     def countFromOpp(self, oppHistory, isDefect = True):
         '''
@@ -212,3 +285,125 @@ class MyAgent(Player):
         else:
             # by default, we coop
             return 0;
+
+    # handshaking logic
+    class ECC:
+        codeword_dict: dict;
+        G: np.ndarray;
+        
+        # Constructor method
+        def __init__(self):
+            # Define the generator matrix G (5x15)
+            self.G = np.empty((5, 15));
+
+            # Initialize an empty dictionary for codeword lookup
+            self.codeword_dict = {};
+
+            # Precompute all valid codewords
+            self.precompute_codewords();
+
+        def precompute_codewords(self):
+            '''
+            Precompute all valid codewords
+            '''
+            # loop through all possible 5-bit data combinations (0 to 31):
+            for num in range(0, 32): # in decimals
+                    # Convert integer to 5-bit binary
+                    data_bits = '{0:05b}'.format(num);
+                    # Encode the 5 bits using the encode method
+                    codeword = self.encode(data_bits);
+
+                    if (type(codeword) == list):
+                        codeword_str = "";
+                        for digit in codeword:
+                            codeword_str += str(digit);
+                        codeword = codeword_str;
+                    # Store the codeword and corresponding data bits in dictionary
+                    self.codeword_dict.update({codeword: data_bits});
+        
+        def hamming_distance(self, cw1: str, cw2: str):
+            '''
+            Compute Hamming distance between two codewords
+            '''
+            # Initialize distance counter
+            distance = 0;
+
+            prevBit: str = cw1[0];
+            # Compare each bit of cw1 and cw2
+            for digit_cw1 in cw1:
+                if (digit_cw1 != prevBit):
+                    distance += 1;
+                # update current bit in loop
+                prevBit = digit_cw1;
+            
+            prevBit: str = cw2[0];
+            for digit_cw2 in cw2:
+                if (digit_cw2 != prevBit):
+                    distance += 1;
+                # update current bit in loop
+                prevBit = digit_cw2;
+            
+            return distance;
+        
+        def encode(self, data_bits):
+            '''
+            Encode 5 bits of data into 15-bit codeword
+            '''
+            # Validate data_bits length and contents
+            if (type(data_bits) == str):
+                data_bits_list = [];
+                for bit in data_bits:
+                    data_bits_list.append(bit);
+                    data_bits = data_bits_list;
+            if (len(data_bits) != 5 or any(str(b) not in ['0', '1'] for b in data_bits)):
+                raise ValueError("Data must be a list of 5 bits.");
+
+            # Multiply data_bits with the generator matrix G to get codeword
+            data_vector = np.array(data_bits, dtype=int).reshape(1, -1);
+            codeword = ((data_vector @ self.G) % 2).flatten().astype(int).tolist();
+
+            return codeword;
+
+        def decode(self, received_codeword):
+            # Step 1: Check if the received codeword matches a precomputed codeword
+            if tuple(received_codeword) in self.codeword_dict:
+                return self.codeword_dict[tuple(received_codeword)];
+            
+            # Step 2: If an exact match isn't found, find the closest valid codeword
+            min_distance = float('inf');
+            closest_data_bits = None;
+
+            # Loop through all precomputed codewords to find the closest match
+            for codeword, data_bits in self.codeword_dict.items():
+                # Compute the Hamming distance between received_codeword and this codeword
+                distance = self.hamming_distance(received_codeword, codeword);
+                # Update the closest match if this codeword has a smaller distance
+                if distance < min_distance:
+                    min_distance = distance;
+                    closest_data_bits = data_bits;
+            
+            # Step 3: Return the closest data_bits
+            return closest_data_bits;
+        
+        def check_early_mismatch(original: str, received: str):
+            '''
+            Check early mismatch between two sequences
+            '''
+            # Count differing bits
+            diff_count = 0;
+            
+            # loop through original and received bits
+            prevBit = original[0];
+            for digit_original in original:
+                if (digit_original != prevBit):
+                    diff_count += 1;
+                prevBit = original[digit_original];
+            
+            prevBit = received[0];
+            for digit_received in received:
+                if (digit_received != prevBit):
+                    diff_count += 1;
+                prevBit = received[digit_received];
+            
+            # Return true if more than 2 differences
+            return diff_count > 2;
