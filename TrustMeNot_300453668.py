@@ -288,6 +288,11 @@ class TrustMeNot(Player):
 
     # handshaking logic
     class ECC:
+        '''
+        Implemented by one of the classmates mainly whom I am colluding with.
+
+        @author AgentCipher
+        '''
         codeword_dict: dict;
         G: np.ndarray;
         
