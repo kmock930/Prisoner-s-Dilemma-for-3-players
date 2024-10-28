@@ -3,7 +3,7 @@ import numpy as np
 
 class TrustMeNot(Player):
     """
-    My agent
+    My agent - named "TrustMeNot"
 
     Created on Oct 18, 2024
 
