@@ -13,8 +13,8 @@ import time
 import sys
 import numpy
 
-from SampleAgent_007 import MyAgent as Agent1
-from AnotherSampleAgent import SampleAgent as MeanAgent
+from TrustMeNot_101363677 import TrustMeNot
+from SelfishAgent import SelfishAgent
 
 NPLAYERS = 3
 
@@ -24,11 +24,11 @@ NPLAYERS = 3
 
 noiseFactor = 0.02  # Chance that a player will do the opposite action than they had intended.
 phoneBook = {
-        0: Agent1(),
-        1: Agent1(),
-        2: NicePlayer(),
-        3: MeanPlayer(),
-        4: RandomPlayer()
+        0: TrustMeNot(),
+        1: RandomPlayer(),
+        2: SelfishAgent(),
+        3: NicePlayer(),
+        4: MeanPlayer()
     }
 
 def playRound(player1, player2, player3, history1, history2, history3):
