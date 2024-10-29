@@ -13,11 +13,9 @@ class TrustMeNot(Player):
     N_CONSISTENT_ROUNDS = 5; #take 5 rounds to determine whether handshake or not
 
     def __init__(self): # default constructor
-        self.code = [0,0,0,0,0];
+        self.code = [1,0,1,0,1];
         self.handshake = self.ECC();
         self.encoded_code = self.handshake.encode(self.code);
-        self.flip = 0; # Used to remember last move
-        self.send_bits = [];
         self.mode = 0;
         
     def studentID(self):
@@ -27,15 +25,13 @@ class TrustMeNot(Player):
     def play(self, myHistory, oppHistory1, oppHistory2):
         if (len(myHistory) == 0 or len(oppHistory1) == 0 or len(oppHistory2) == 0):
             # start by cooperating
-            self.send_bits.append(0);
             return 0;
         if (len(myHistory) >= 5):
             # update previous move from handshake
-            self.flip = myHistory[-1];
             data_bits = oppHistory1[-5:];
             encoded = self.handshake.encode(data_bits);
             decoded = self.handshake.decode(encoded);
-            if (all(codeword == 0 for codeword in decoded)):
+            if (len(self.code) == len(decoded) and self.handshake.check_early_mismatch(self.code, decoded) != True):
                 # opp 1 is an ally
                 pass;
             else:
@@ -43,7 +39,7 @@ class TrustMeNot(Player):
             data_bits = oppHistory2[-5:];
             encoded = self.handshake.encode(data_bits);
             decoded = self.handshake.decode(encoded);
-            if (all(codeword == 0 for codeword in decoded)):
+            if (len(self.code) == len(decoded) and self.handshake.check_early_mismatch(self.code, decoded) != True):
                 # opp 2 is an ally
                 pass;
             else:
@@ -73,7 +69,6 @@ class TrustMeNot(Player):
         # determine from all strats - by majority vote based on the mean
         action: int = round(np.mean(np.asarray(strats)));
         print(f"My Own Agent takes {action}");
-        self.send_bits.append(action);
         return action;
 
     # Strategies set
@@ -291,7 +286,7 @@ class TrustMeNot(Player):
         '''
         Implemented by one of the classmates mainly whom I am colluding with.
 
-        @author AgentCipher
+        @author Abdullah Mostafa (101008311) -- Agent Cipher
         '''
         codeword_dict: dict;
         G: np.ndarray;
@@ -299,7 +294,7 @@ class TrustMeNot(Player):
         # Constructor method
         def __init__(self):
             # Define the generator matrix G (5x15)
-            self.G = np.empty((5, 15));
+            self.G = np.empty((5, 15), dtype=int);
 
             # Initialize an empty dictionary for codeword lookup
             self.codeword_dict = {};
@@ -361,6 +356,7 @@ class TrustMeNot(Player):
                     data_bits_list.append(bit);
                     data_bits = data_bits_list;
             if (len(data_bits) != 5 or any(str(b) not in ['0', '1'] for b in data_bits)):
+                print(f"Length of data bits: {len(data_bits)}");
                 raise ValueError("Data must be a list of 5 bits.");
 
             # Multiply data_bits with the generator matrix G to get codeword
@@ -370,6 +366,9 @@ class TrustMeNot(Player):
             return codeword;
 
         def decode(self, received_codeword):
+            if (len(received_codeword) != 15 or any(str(b) not in ['0', '1'] for b in received_codeword)):
+                print(f"Length of Codeword: {len(received_codeword)}");
+                raise ValueError("Codeword must be a list of 5 bits.");
             # Step 1: Check if the received codeword matches a precomputed codeword
             if tuple(received_codeword) in self.codeword_dict:
                 return self.codeword_dict[tuple(received_codeword)];
@@ -390,7 +389,7 @@ class TrustMeNot(Player):
             # Step 3: Return the closest data_bits
             return closest_data_bits;
         
-        def check_early_mismatch(original: str, received: str):
+        def check_early_mismatch(self, original: str | list, received: str | list):
             '''
             Check early mismatch between two sequences
             '''
@@ -402,13 +401,13 @@ class TrustMeNot(Player):
             for digit_original in original:
                 if (digit_original != prevBit):
                     diff_count += 1;
-                prevBit = original[digit_original];
+                prevBit = digit_original;
             
             prevBit = received[0];
             for digit_received in received:
                 if (digit_received != prevBit):
                     diff_count += 1;
-                prevBit = received[digit_received];
+                prevBit = digit_received;
             
             # Return true if more than 2 differences
             return diff_count > 2;
