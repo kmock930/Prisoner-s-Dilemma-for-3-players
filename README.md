@@ -3,10 +3,10 @@ This agent is a strategic agent maximizing cumulative rewards through a combinat
 ## Core Strategy Set
 1. **History Comparison**: This strategy evaluates each opponent’s past defections and cooperations, deciding the current move based on the overall history.
 2. **Markov Chain Predictions**: This strategy leverages a Markov Chain-based machine learning model to predict future opponent moves, by analyzing patterns in each opponent’s history for tailored response predictions.
-3. **Special Cooperation Cooperation**: This strategy decides whether to cooperate solely based on some special combinations [1] from the most recent round of the game. The approach adapts to this 3-player game. Interestingly, TrustMeNot avoids forgiving an opponent if betrayed in the previous round, preventing unintended cooperations that could lead to exploitation. [2]
-4. **Backstabing an Ally**: TrustMeNot enjoys the best utilities in both situations, when you coop and when you defect, respectively.
+3. **Special Combinations**: This strategy decides whether to cooperate solely based on some special combinations [1] from the most recent round of the game. The approach adapts to this 3-player game. Interestingly, TrustMeNot avoids forgiving an opponent if betrayed in the previous round, preventing unintended cooperations that could lead to exploitation. [2]
+4. **Backstabbing an Ally**: TrustMeNot enjoys the best utilities in both situations, when you coop and when you defect, respectively.
 - Interestingly, the best situation when you defect is when other players cooperate. This outcome yields a utility of 8, however, it is nearly impossible. [2]
-- The only way to achieve this is to “fake a handshake”, which suggests firstly establishing trust with players, and then defecting suddenly after 3 handshaking rounds. In such way, the supposed “allies” will not adapt to the agent’s backstabbing quickly and thus, it gets a chance to attain the maximum possible utility in the game in this 1 round. 
+- The only way to achieve this is to “fake a handshake”, which suggests firstly establishing trust with players, and then defecting suddenly after 3 handshaking rounds. In such way, the supposed “allies” will not adapt to the agent’s backstabbing quickly and thus, it gets a chance to attain the maximum possible utility in the game in this 1 round, while as well consistently enjoying a utility of 6 through handshaking. 
 ## Selfish Strategy Set
 These strategies prioritize maximizing TrustMeNot’s own profit without considering cumulative group benefits.
 1. **Defection based on Opponent History**: If any opponent’s history contains more defections than cooperations, TrustMeNot will defect.
