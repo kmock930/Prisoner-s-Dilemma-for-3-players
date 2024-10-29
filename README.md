@@ -1,5 +1,7 @@
 # TrustMeNot Agent
 This agent is a strategic agent maximizing cumulative rewards through a combination of cooperative and self-serving tactics. It takes an action proposed by a majority vote. TrustMeNot colludes with “AgentCipher” and “Monkey” to explore collusion possibilities.
+## Packages and Dependencies
+- Install numpy with `pip install numpy`
 ## Core Strategy Set
 1. **History Comparison**: This strategy evaluates each opponent’s past defections and cooperations, deciding the current move based on the overall history.
 2. **Markov Chain Predictions**: This strategy leverages a Markov Chain-based machine learning model to predict future opponent moves, by analyzing patterns in each opponent’s history for tailored response predictions.
